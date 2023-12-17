@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import { register, reset } from '../features/auth/authSliceI'
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -6,20 +9,53 @@ const Register = () => {
     email: '',
     password: '',
     password2: '',
-  })
+  });
+
+  const { name, email, password, password2 } = formData;
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth)
 
   const onChange = (e) => {
     setFormData((prevState) => ({
       ...prevState,
       [e.target.name]: e.target.value
     }))
+  };
 
-  }
   const handleSubmit = (e) => {
     e.preventDefault()
+    if (password !== password2) {
+      console.log('pasword doesnt match')
+    } else {
+      const userData = {
+        name,
+        email,
+        password,
+      }
+      dispatch(register(userData))
+    }
+  };
+
+  useEffect(() => {
+    if (isError) {
+      console.log('error')
+    }
+    if (isSuccess || user) {
+      navigate('/')
+    }
+    dispatch(reset())
+
+  }, [user, isError, isSuccess, message, navigate, dispatch]);
+
+  if(isLoading){
+    return <div>Loading ... </div>
   }
 
-  const { name, email, password, password2 } = formData
+
+
+
+
   return (
     <form onSubmit={handleSubmit}>
       <input
